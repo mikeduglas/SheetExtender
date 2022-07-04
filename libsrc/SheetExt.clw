@@ -455,7 +455,7 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
     
     fntTab.DeleteObject()
 
-    !- draw "x" button
+    !- draw custom button
     SELF.OnDrawCustomButton(dc, tabFeq, rcTab)
     
     !- increase total tab rects width
@@ -504,21 +504,6 @@ textColor                           LONG, AUTO
   
   tabCtrl.Init(pTabFeq)
 
-  rc.Assign(pTabRect)
-  IF SELF.FEQ{PROP:ChoiceFEQ} = pTabFeq
-    !- for selected tab draw "X" a little higher
-    rc.OffsetRect(0, -1)
-  END
-    
-  rc.right -= TAB::padWidth
- 
-  !- calc X rect
-  rcX.Assign(rc)
-  dc.DrawText(SELF.btnInfo.ButtonText, rcX, dtFormat+DT_CALCRECT)
-  textWidth = rcX.Width()
-  rcX.left = rc.right - textWidth
-  rcX.right = rc.right
-
   COMPILE('New sheet properties', _C80_)
   IF SELF.FEQ{PROP:TabSheetStyle} <> TabStyle:Default
     rcX.OffsetRect(-TAB::StylePad, 0)
@@ -533,7 +518,7 @@ textColor                           LONG, AUTO
 !  END
   !'New sheet properties'
   
-  !- erase X button
+  !- calc background color
   IF tabCtrl.GetPropA(_X_hovered)
     !- hover color
     bkColor = SELF.btnInfo.HoverBackColor
@@ -549,18 +534,14 @@ textColor                           LONG, AUTO
         IF bkColor = COLOR:NONE
           bkColor = SELF.FEQ{PROP:Color}  !- check SHEET color
           IF bkColor = COLOR:NONE
+            bkColor = COLOR:WINDOWGRAY    !- default background
             COMPILE('New sheet properties', _C80_)
             CASE SELF.FEQ{PROP:TabSheetStyle}
             OF TabStyle:BlackAndWhite OROF TabStyle:Colored
               bkColor = CHOOSE(NOT bIsSelected, COLOR:GainsboroE3, COLOR:White)    !- default background
             OF TabStyle:Boxed
               bkColor = CHOOSE(NOT bIsSelected, COLOR:WINDOWGRAY, COLOR:White)     !- default background
-            ELSE
-              bkColor = COLOR:WINDOWGRAY    !- default background
             END
-            !'New sheet properties'
-            OMIT('New sheet properties', _C80_)
-            bkColor = COLOR:WINDOWGRAY    !- default background
             !'New sheet properties'
           END
         END
@@ -575,18 +556,34 @@ textColor                           LONG, AUTO
     bkColor = winapi::GetSysColor(bkColor)
   END
 
-  !- fill X rect
+  !- calc custom button rect
+  rc.Assign(pTabRect)
+  
+  !- leave some space on right side
+  rc.right -= TAB::padWidth
+ 
+  !- get button text rect
+  rcX.Assign(rc)
+  dc.DrawText(SELF.btnInfo.ButtonText, rcX, dtFormat+DT_CALCRECT)
+  textWidth = rcX.Width()
+  rcX.left = rc.right - textWidth
+  rcX.right = rc.right
+  IF SELF.FEQ{PROP:ChoiceFEQ} = pTabFeq
+    !- for selected tabs draw custom button higher a little
+    rcX.OffsetRect(0, -1)
+  END
+
+  !- fill custom button rect
   IF bkColor <> COLOR:NONE
     dc.FillSolidRect(rcX, bkColor)
   END
 
-  !- draw X button
+  !- calc text color
   IF tabCtrl.GetPropA(_X_hovered)
     textColor = SELF.btnInfo.HoverFontColor
   ELSE
     textColor = SELF.btnInfo.FontColor
   END
-  
   IF textColor <> COLOR:NONE
     IF BAND(textColor, 80000000h) !- system color
       textColor = winapi::GetSysColor(textColor)
@@ -594,10 +591,11 @@ textColor                           LONG, AUTO
     dc.SetTextColor(textColor)
   END
   
+  !- draw custom button
   dc.SetBkMode(TRANSPARENT)
   dc.DrawText(SELF.btnInfo.ButtonText, rcX, dtFormat)
 
-  !- save 'X' rect
+  !- save custom button rect
   tabCtrl.SetPropA(_X_exists, TRUE)
   tabCtrl.SetPropA(_X_left, rcX.left)
   tabCtrl.SetPropA(_X_top, rcX.top)
