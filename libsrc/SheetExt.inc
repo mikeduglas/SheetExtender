@@ -5,7 +5,7 @@
   INCLUDE('winapi.inc'), ONCE
 
 typCustomTabButtonInfo        GROUP, TYPE
-ButtonText                      STRING(3)
+ButtonText                      STRING(6)
 ExtraSpaces                     UNSIGNED    !- number of extra spaces in TAB text
 FontName                        STRING(31)
 FontSize                        REAL        !- > 1: font size; < 1: scale factor relative to SHEET{Prop:FontSize}
