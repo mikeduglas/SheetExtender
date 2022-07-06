@@ -7,7 +7,7 @@ only 3 possible actions: dropdown menu, close button, help button.
 ![Screenshot 1](https://github.com/mikeduglas/SheetExtender/blob/master/screenshots/se_demo_1.png?raw=true)  
 ![Screenshot 2](https://github.com/mikeduglas/SheetExtender/blob/master/screenshots/se_demo_2.png?raw=true)  
 
-The buttons are fully customizabe, you can set up: text, font, size, colors, hover colors, acftions.
+The buttons are fully customizabe, you can set up: text, font, size, colors, hover colors, acftions. Unicode text is supported (UTF-16 LE).
 
 ### Requirements
 - Clarion versions: C6.3 and higher.

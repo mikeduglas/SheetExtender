@@ -5,7 +5,7 @@
   INCLUDE('winapi.inc'), ONCE
 
 typCustomTabButtonInfo        GROUP, TYPE
-ButtonText                      STRING(6)
+ButtonText                      STRING(8)
 ExtraSpaces                     UNSIGNED    !- number of extra spaces in TAB text
 FontName                        STRING(31)
 FontSize                        REAL        !- > 1: font size; < 1: scale factor relative to SHEET{Prop:FontSize}
@@ -15,6 +15,7 @@ FontColor                       LONG
 BackColor                       LONG
 HoverFontColor                  LONG
 HoverBackColor                  LONG
+IsUnicode                       BOOL
                               END
 
 TSheetExtBase                 CLASS(TWnd), TYPE, MODULE('sheetext.clw'), LINK('sheetext.clw')
@@ -28,10 +29,11 @@ Destruct                        PROCEDURE(), DERIVED
 Init                            PROCEDURE(SIGNED pFeq), DERIVED
 SetCustomButtonInfo             PROCEDURE(<STRING pText>, <UNSIGNED pExtraSpaces>, | 
                                   <STRING pFontName>, <REAL pFontSize>, <UNSIGNED pFontStyle>, <LONG pFontCharset>, | 
-                                  <LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>)
+                                  <LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>, <BOOL pIsUnicode>)
 SetCustomButtonInfo             PROCEDURE(typCustomTabButtonInfo pInfo)
-SetFont                         PROCEDURE(<STRING pFontName>, <REAL pFontSize>, <UNSIGNED pFontStyle>, <LONG pFontCharset>)
-SetColors                       PROCEDURE(<LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>)
+SetCustomButtonText             PROCEDURE(<STRING pText>, <BOOL pIsUnicode>)  !- Unicode: pass UTF16 LE charactest
+SetCustomButtonFont             PROCEDURE(<STRING pFontName>, <REAL pFontSize>, <UNSIGNED pFontStyle>, <LONG pFontCharset>)
+SetCustomButtonColors           PROCEDURE(<LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>)
 SetCustomButtonAsClose          PROCEDURE()
 SetCustomButtonAsDropDown       PROCEDURE()
 SetCustomButtonAsHelp           PROCEDURE()

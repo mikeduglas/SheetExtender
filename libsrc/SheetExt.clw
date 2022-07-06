@@ -56,6 +56,13 @@ szComCtl32DllGetVersion       CSTRING('DllGetVersion'), STATIC
   END
 !!!endregion
 
+!!!region Unicode
+UTF16::BOMLE                  STRING('<0FFh,0FEh>')
+UTF16::BOMBE                  STRING('<0FEh,0FFh>')
+UTF16::Char0                  STRING('<0h,0h>')
+UTF8::BOM                     STRING('<0EFh,0BBh,0BFh>')
+!!!endregion
+
 !!!region Custom colors
 COLOR:WINDOWGRAY              EQUATE(0F0F0F0H)    !- default TAB background 
 COLOR:GainsboroE3             EQUATE(00E3E3E3h)   !- default TAB background if TabStyle:BlackAndWhite and TabStyle:Colored
@@ -238,7 +245,8 @@ tabFeq                          SIGNED, AUTO
 
 TSheetExtBase.SetCustomButtonInfo PROCEDURE(<STRING pText>, <UNSIGNED pExtraSpaces>, | 
                                     <STRING pFontName>, <REAL pFontSize>, <UNSIGNED pFontStyle>, <LONG pFontCharset>, | 
-                                    <LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>)
+                                    <LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>, |
+                                    <BOOL pIsUnicode>)
   CODE
   IF pText
     SELF.btnInfo.ButtonText = pText
@@ -270,12 +278,30 @@ TSheetExtBase.SetCustomButtonInfo PROCEDURE(<STRING pText>, <UNSIGNED pExtraSpac
   IF NOT OMITTED(pHoverBackColor)
     SELF.btnInfo.HoverBackColor = pHoverBackColor
   END
+  IF NOT OMITTED(pIsUnicode)
+    SELF.btnInfo.IsUnicode = pIsUnicode
+  END
   
 TSheetExtBase.SetCustomButtonInfo PROCEDURE(typCustomTabButtonInfo pInfo)
   CODE
   SELF.btnInfo :=: pInfo
   
-TSheetExtBase.SetFont         PROCEDURE(<STRING pFontName>, <REAL pFontSize>, <UNSIGNED pFontStyle>, <LONG pFontCharset>)
+TSheetExtBase.SetCustomButtonText PROCEDURE(<STRING pText>, <BOOL pIsUnicode>)
+  CODE
+  IF pText
+    SELF.btnInfo.ButtonText = pText
+  END
+  IF NOT OMITTED(pIsUnicode)
+    SELF.btnInfo.IsUnicode = pIsUnicode
+    IF pIsUnicode
+      !- add UTF16::BOMLE
+      IF SUB(SELF.btnInfo.ButtonText, 1, 2) <> UTF16::BOMLE
+        SELF.btnInfo.ButtonText = UTF16::BOMLE & SELF.btnInfo.ButtonText
+      END
+    END
+  END
+
+TSheetExtBase.SetCustomButtonFont PROCEDURE(<STRING pFontName>, <REAL pFontSize>, <UNSIGNED pFontStyle>, <LONG pFontCharset>)
   CODE
   IF pFontName
     SELF.btnInfo.FontName = pFontName
@@ -290,7 +316,7 @@ TSheetExtBase.SetFont         PROCEDURE(<STRING pFontName>, <REAL pFontSize>, <U
     SELF.btnInfo.FontCharset = pFontCharset
   END
 
-TSheetExtBase.SetColors       PROCEDURE(<LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>)
+TSheetExtBase.SetCustomButtonColors   PROCEDURE(<LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>)
   CODE
   IF NOT OMITTED(pFontColor)
     SELF.btnInfo.FontColor = pFontColor
@@ -566,7 +592,12 @@ textColor                           LONG, AUTO
  
   !- get button text rect
   rcX.Assign(rc)
-  dc.DrawText(SELF.btnInfo.ButtonText, rcX, dtFormat+DT_CALCRECT)
+  IF NOT SELF.btnInfo.IsUnicode
+    dc.DrawText(SELF.btnInfo.ButtonText, rcX, dtFormat+DT_CALCRECT)
+  ELSE
+    dc.DrawTextW(CLIP(SELF.btnInfo.ButtonText), rcX, dtFormat+DT_CALCRECT)
+  END
+  
   textWidth = rcX.Width()
   rcX.left = rc.right - textWidth
   rcX.right = rc.right
@@ -595,8 +626,12 @@ textColor                           LONG, AUTO
   
   !- draw custom button
   dc.SetBkMode(TRANSPARENT)
-  dc.DrawText(SELF.btnInfo.ButtonText, rcX, dtFormat)
-
+  IF NOT SELF.btnInfo.IsUnicode
+    dc.DrawText(SELF.btnInfo.ButtonText, rcX, dtFormat)
+  ELSE
+    dc.DrawTextW(CLIP(SELF.btnInfo.ButtonText), rcX, dtFormat)
+  END
+  
   !- save custom button rect
   tabCtrl.SetPropA(_X_exists, TRUE)
   tabCtrl.SetPropA(_X_left, rcX.left)

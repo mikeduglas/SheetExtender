@@ -85,8 +85,13 @@ shCtrl3                       TSheetExtHelp
   shCtrl1.SetCustomButtonAsDropDown() !- dropdown arrow
   shCtrl2.SetCustomButtonAsClose()    !- X button
   shCtrl3.SetCustomButtonAsHelp()     !- ? button
-  shCtrl3.SetColors(COLOR:Gray,,COLOR:White,00FFBF00h)
+  shCtrl3.SetCustomButtonColors(COLOR:Gray,,COLOR:White,00FFBF00h)
   
+  !- Unicode test
+!  shCtrl3.SetCustomButtonText('<03Dh,0D8h,0,0DEh>', TRUE) !- UTF16 character 3D D8 00 DE (smile)
+!  shCtrl3.SetCustomButtonFont('Tahoma', 9, FONT:regular, CHARSET:ANSI)
+!  shCtrl3.SetCustomButtonColors(COLOR:Gray,,COLOR:White,00FFBF00h)
+
   ACCEPT
   END
   
