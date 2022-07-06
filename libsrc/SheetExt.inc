@@ -46,9 +46,9 @@ GetTabRect                      PROCEDURE(SIGNED pTabFeq, *TRect pRect), PROTECT
 GetTabXRect                     PROCEDURE(SIGNED pTabFeq, *TRect pRect), PROTECTED
 GetTabByXPoint                  PROCEDURE(POINT pt), SIGNED, PROTECTED
 
-OnPaint                         PROCEDURE(ULONG wMsg, UNSIGNED wParam, LONG lParam), PROTECTED, VIRTUAL
-OnLButtonDown                   PROCEDURE(ULONG wMsg, UNSIGNED wParam, LONG lParam), VIRTUAL, PROTECTED
-OnMouseMove                     PROCEDURE(ULONG wMsg, UNSIGNED wParam, LONG lParam), VIRTUAL, PROTECTED
+OnPaint                         PROCEDURE(), PROTECTED, VIRTUAL
+OnLButtonDown                   PROCEDURE(UNSIGNED wParam, LONG lParam), BOOL, VIRTUAL, PROTECTED
+OnMouseMove                     PROCEDURE(UNSIGNED wParam, LONG lParam), VIRTUAL, PROTECTED
 
 OnDrawCustomButton              PROCEDURE(TDC pDc, SIGNED pTabFeq, TRect pTabRect), PROTECTED, VIRTUAL
 OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROTECTED, VIRTUAL

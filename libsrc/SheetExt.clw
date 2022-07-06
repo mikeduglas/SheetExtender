@@ -57,8 +57,8 @@ szComCtl32DllGetVersion       CSTRING('DllGetVersion'), STATIC
 !!!endregion
 
 !!!region Custom colors
-COLOR:WINDOWGRAY              EQUATE(0F0F0F0H)
-COLOR:GainsboroE3             EQUATE(00E3E3E3h)
+COLOR:WINDOWGRAY              EQUATE(0F0F0F0H)    !- default TAB background 
+COLOR:GainsboroE3             EQUATE(00E3E3E3h)   !- default TAB background if TabStyle:BlackAndWhite and TabStyle:Colored
 !!!endregion
 
 !!!region TAB's properties
@@ -77,9 +77,10 @@ _X_bottom                     EQUATE('_X_bottom')
 !!!endregion
 
 !!!region TAB values found empirically
-TAB::padWidth                 EQUATE(6)
-TAB::borderWidth              EQUATE(4)
+TAB::PadWidth                 EQUATE(6)
+TAB::BorderWidth              EQUATE(4)
 TAB::StylePad                 EQUATE(4)
+TAB::SelVertOffest            EQUATE(-2)
 !!!endregion
 
 !!!region Tab info
@@ -116,14 +117,15 @@ ctrl                            &TSheetExtBase
 
   CASE wMsg
   OF WM_MOUSEMOVE
-    ctrl.OnMouseMove(wMsg, wParam, lParam)
+    ctrl.OnMouseMove(wParam, lParam)
     
   OF WM_LBUTTONDOWN
-    ctrl.OnLButtonDown(wMsg, wParam, lParam)
-    RETURN FALSE
-
+    IF ctrl.OnLButtonDown(wParam, lParam) = FALSE
+      RETURN FALSE
+    END
+    
   OF WM_PAINT
-    ctrl.OnPaint(wMsg, wParam, lParam)
+    ctrl.OnPaint()
     RETURN FALSE
   END
   
@@ -364,7 +366,7 @@ TSheetExtBase.NotifyTabGetText    PROCEDURE(TWnd pTabCtrl)
     pTabCtrl.SetPropA(_TAB_IsVisible_, 1)
   END
 
-TSheetExtBase.OnPaint         PROCEDURE(ULONG wMsg, UNSIGNED wParam, LONG lParam)
+TSheetExtBase.OnPaint         PROCEDURE()
 dc                              TDC
 res                             LONG, AUTO
 i                               LONG, AUTO
@@ -390,7 +392,7 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
   SELF.ClearTabProps()
   
   !- Call SHEET's default proc, then custom OnPaint.
-  SELF.DefSubclassProc(wMsg, wParam, lParam)
+  SELF.DefSubclassProc(WM_PAINT, 0, 0)
 
   !- stop listen for TAB's WM_GETTEXT
   SELF.bPainting = FALSE
@@ -426,14 +428,14 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
     dc.DrawText(tabFeq{PROP:Text}, rcText, dtFormat+DT_CALCRECT, TRUE)
 
     !- add extra space for padding and icon
-    rcText.OffsetRect(TAB::padWidth + iconWidth, 4)
+    rcText.OffsetRect(TAB::PadWidth + iconWidth, 4)
     
     !- set text rect as (x, y, w, h)
     rcText.OffsetRect(totalWidth, 0)
     
     COMPILE('New sheet properties', _C80_)
     IF SELF.FEQ{PROP:TabSheetStyle} <> TabStyle:Default
-      rcText.OffsetRect(TAB::padWidth, 0)
+      rcText.OffsetRect(TAB::PadWidth, 0)
     END
     !'New sheet properties'
     
@@ -444,7 +446,7 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
     !- TAB rect
     rcTab.Assign(rcText)
     rcTab.left -= iconWidth+2
-    rcTab.right += TAB::padWidth
+    rcTab.right += TAB::PadWidth
 !    dc.FillSolidRect(rcTab, RANDOM(0, 0ffffffh))
     
     !- save TAB's rect
@@ -459,7 +461,7 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
     SELF.OnDrawCustomButton(dc, tabFeq, rcTab)
     
     !- increase total tab rects width
-    totalWidth += iconWidth + TAB::padWidth + textWidth + TAB::borderWidth
+    totalWidth += iconWidth + TAB::PadWidth + textWidth + TAB::BorderWidth
 !    COMPILE('New sheet properties', _C80_)
 !    IF SELF.FEQ{PROP:TabSheetStyle} <> TabStyle:Default
 !      totalWidth += TAB::StylePad
@@ -560,7 +562,7 @@ textColor                           LONG, AUTO
   rc.Assign(pTabRect)
   
   !- leave some space on right side
-  rc.right -= TAB::padWidth
+  rc.right -= TAB::PadWidth
  
   !- get button text rect
   rcX.Assign(rc)
@@ -570,7 +572,7 @@ textColor                           LONG, AUTO
   rcX.right = rc.right
   IF SELF.FEQ{PROP:ChoiceFEQ} = pTabFeq
     !- for selected tabs draw custom button higher a little
-    rcX.OffsetRect(0, -1)
+    rcX.OffsetRect(0, TAB::SelVertOffest)
   END
 
   !- fill custom button rect
@@ -604,7 +606,7 @@ textColor                           LONG, AUTO
   
   fntButton.DeleteObject()
 
-TSheetExtBase.OnLButtonDown   PROCEDURE(ULONG wMsg, UNSIGNED wParam, LONG lParam)
+TSheetExtBase.OnLButtonDown   PROCEDURE(UNSIGNED wParam, LONG lParam)
 pt                              LIKE(POINT)
 tabFeq                          SIGNED, AUTO
 tabCtrl                         TWnd
@@ -620,13 +622,13 @@ rc                              TRect
       !- redraw
       SELF.RedrawWindow(RDW_INVALIDATE + RDW_UPDATENOW)
       !- don't call default handler DefSubclassProc
-      RETURN
+      RETURN FALSE
     END
   END
-  !- call default handler for WM_LBUTTOMNOWN
-  SELF.DefSubclassProc(wMsg, wParam, lParam)
-
-TSheetExtBase.OnMouseMove     PROCEDURE(ULONG wMsg, UNSIGNED wParam, LONG lParam)
+  !- call default handler DefSubclassProc
+  RETURN TRUE
+  
+TSheetExtBase.OnMouseMove     PROCEDURE(UNSIGNED wParam, LONG lParam)
 pt                              LIKE(POINT)
 dc                              TDC
 tabFeq                          SIGNED, AUTO
