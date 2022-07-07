@@ -131,6 +131,11 @@ ctrl                            &TSheetExtBase
       RETURN FALSE
     END
     
+  OF WM_RBUTTONUP
+    IF ctrl.OnRButtonUp(wParam, lParam) = FALSE
+      RETURN FALSE
+    END
+    
   OF WM_PAINT
     ctrl.OnPaint()
     RETURN FALSE
@@ -391,6 +396,56 @@ TSheetExtBase.NotifyTabGetText    PROCEDURE(TWnd pTabCtrl)
     !- set _TAB_IsVisible_ prop
     pTabCtrl.SetPropA(_TAB_IsVisible_, 1)
   END
+
+TSheetExtBase.GetTabRect      PROCEDURE(SIGNED pTabFeq, *TRect rc)
+tabCtrl                         TWnd
+  CODE
+  tabCtrl.Init(pTabFeq)
+  rc.left = tabCtrl.GetPropA(_TAB_left)
+  rc.top = tabCtrl.GetPropA(_TAB_top)
+  rc.right = tabCtrl.GetPropA(_TAB_right)
+  rc.bottom = tabCtrl.GetPropA(_TAB_bottom)
+
+TSheetExtBase.GetTabXRect     PROCEDURE(SIGNED pTabFeq, *TRect rc)
+tabCtrl                         TWnd
+  CODE
+  tabCtrl.Init(pTabFeq)
+  IF tabCtrl.GetPropA(_X_exists)
+    rc.left = tabCtrl.GetPropA(_X_left)
+    rc.top = tabCtrl.GetPropA(_X_top)
+    rc.right = tabCtrl.GetPropA(_X_right)
+    rc.bottom = tabCtrl.GetPropA(_X_bottom)
+  ELSE
+    rc.Assign(0, 0, -1, -1)
+  END
+  
+TSheetExtBase.GetTabByXPoint  PROCEDURE(POINT pt)
+tabFeq                          SIGNED, AUTO
+rcX                             TRect
+i                               LONG, AUTO
+  CODE
+  LOOP i=1 TO SELF.FEQ{PROP:NumTabs}
+    tabFeq = SELF.FEQ{PROP:Child, i}
+    SELF.GetTabXRect(tabFeq, rcX)
+    IF rcX.PtInRect(pt)
+      RETURN tabFeq
+    END
+  END
+  RETURN 0
+  
+TSheetExtBase.GetTabByPoint   PROCEDURE(POINT pt)
+tabFeq                          SIGNED, AUTO
+rc                              TRect
+i                               LONG, AUTO
+  CODE
+  LOOP i=1 TO SELF.FEQ{PROP:NumTabs}
+    tabFeq = SELF.FEQ{PROP:Child, i}
+    SELF.GetTabRect(tabFeq, rc)
+    IF rc.PtInRect(pt)
+      RETURN tabFeq
+    END
+  END
+  RETURN 0
 
 TSheetExtBase.OnPaint         PROCEDURE()
 dc                              TDC
@@ -663,6 +718,25 @@ rc                              TRect
   !- call default handler DefSubclassProc
   RETURN TRUE
   
+TSheetExtBase.OnRButtonUp     PROCEDURE(UNSIGNED wParam, LONG lParam)
+pt                              LIKE(POINT)
+tabFeq                          SIGNED, AUTO
+tabCtrl                         TWnd
+rc                              TRect
+  CODE
+  pt.x = GET_X_LPARAM(lParam)
+  pt.y = GET_Y_LPARAM(lParam)
+  
+  !- get a TAB where pt is inside TAB rect
+  tabFeq = SELF.GetTabByPoint(pt)
+  IF tabFeq
+    SELF.ClientToScreen(pt)
+    SELF.OnContextMenu(tabFeq, pt)
+    RETURN FALSE
+  END
+  !- call default handler DefSubclassProc
+  RETURN TRUE
+  
 TSheetExtBase.OnMouseMove     PROCEDURE(UNSIGNED wParam, LONG lParam)
 pt                              LIKE(POINT)
 dc                              TDC
@@ -709,39 +783,6 @@ TSheetExtBase.OnCustomButtonPressed   PROCEDURE(SIGNED pTabFeq)
   CODE
   RETURN TRUE
   
-TSheetExtBase.GetTabByXPoint  PROCEDURE(POINT pt)
-tabFeq                          SIGNED, AUTO
-rcX                             TRect
-i                               LONG, AUTO
+TSheetExtBase.OnContextMenu   PROCEDURE(SIGNED pTabFeq, POINT pPt)
   CODE
-  LOOP i=1 TO SELF.FEQ{PROP:NumTabs}
-    tabFeq = SELF.FEQ{PROP:Child, i}
-    SELF.GetTabXRect(tabFeq, rcX)
-    IF rcX.PtInRect(pt)
-      RETURN tabFeq
-    END
-  END
-  RETURN 0
-
-TSheetExtBase.GetTabRect      PROCEDURE(SIGNED pTabFeq, *TRect rc)
-tabCtrl                         TWnd
-  CODE
-  tabCtrl.Init(pTabFeq)
-  rc.left = tabCtrl.GetPropA(_TAB_left)
-  rc.top = tabCtrl.GetPropA(_TAB_top)
-  rc.right = tabCtrl.GetPropA(_TAB_right)
-  rc.bottom = tabCtrl.GetPropA(_TAB_bottom)
-
-TSheetExtBase.GetTabXRect     PROCEDURE(SIGNED pTabFeq, *TRect rc)
-tabCtrl                         TWnd
-  CODE
-  tabCtrl.Init(pTabFeq)
-  IF tabCtrl.GetPropA(_X_exists)
-    rc.left = tabCtrl.GetPropA(_X_left)
-    rc.top = tabCtrl.GetPropA(_X_top)
-    rc.right = tabCtrl.GetPropA(_X_right)
-    rc.bottom = tabCtrl.GetPropA(_X_bottom)
-  ELSE
-    rc.Assign(0, 0, -1, -1)
-  END
 !!!endregion

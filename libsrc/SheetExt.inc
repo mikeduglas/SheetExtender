@@ -46,13 +46,15 @@ NotifyTabGetText                PROCEDURE(TWnd pTabCtrl), PROTECTED
 
 GetTabRect                      PROCEDURE(SIGNED pTabFeq, *TRect pRect), PROTECTED
 GetTabXRect                     PROCEDURE(SIGNED pTabFeq, *TRect pRect), PROTECTED
-GetTabByXPoint                  PROCEDURE(POINT pt), SIGNED, PROTECTED
+GetTabByXPoint                  PROCEDURE(POINT pt), SIGNED, PROTECTED    !- point inside a custom btn
+GetTabByPoint                   PROCEDURE(POINT pt), SIGNED, PROTECTED    !- point inside a tab
 
 OnPaint                         PROCEDURE(), PROTECTED, VIRTUAL
 OnLButtonDown                   PROCEDURE(UNSIGNED wParam, LONG lParam), BOOL, VIRTUAL, PROTECTED
+OnRButtonUp                     PROCEDURE(UNSIGNED wParam, LONG lParam), BOOL, VIRTUAL, PROTECTED
 OnMouseMove                     PROCEDURE(UNSIGNED wParam, LONG lParam), VIRTUAL, PROTECTED
 
 OnDrawCustomButton              PROCEDURE(TDC pDc, SIGNED pTabFeq, TRect pTabRect), PROTECTED, VIRTUAL
-OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROTECTED, VIRTUAL
-
+OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROC, PROTECTED, VIRTUAL
+OnContextMenu                   PROCEDURE(SIGNED pTabFeq, POINT pPt), PROTECTED, VIRTUAL
                               END

@@ -52,14 +52,15 @@ Window                        WINDOW('Extended Sheet control'),AT(,,395,359),CEN
                                 END
                               END
 
-TSheetExtCloseable            CLASS(TSheetExtBase), TYPE
-OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROTECTED, DERIVED
-                              END
 TSheetExtExportable           CLASS(TSheetExtBase), TYPE
-OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROTECTED, DERIVED
+OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROC, PROTECTED, DERIVED
+                              END
+TSheetExtCloseable            CLASS(TSheetExtBase), TYPE
+OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROC, PROTECTED, DERIVED
+OnContextMenu                   PROCEDURE(SIGNED pTabFeq, POINT pPt), DERIVED, VIRTUAL
                               END
 TSheetExtHelp                 CLASS(TSheetExtBase), TYPE
-OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROTECTED, DERIVED
+OnCustomButtonPressed           PROCEDURE(SIGNED pTabFeq), BOOL, PROC, PROTECTED, DERIVED
                               END
 
 shCtrl1                       TSheetExtExportable
@@ -72,6 +73,9 @@ shCtrl3                       TSheetExtHelp
   !- set controls
   CHANGE(?ENTRY1, 'Extended SHEET control')
   SELECT(?ENTRY1, 23, 0)
+  
+!  ?TAB2_1{PROP:Background} = COLOR:Red
+  
   
 !  ?shtHelp{PROP:TabSheetStyle} = TabStyle:BlackAndWhite
 !  ?shtHelp{PROP:TabSheetStyle} = TabStyle:Boxed
@@ -168,6 +172,16 @@ i                                           LONG, AUTO
   
   RETURN PARENT.OnCustomButtonPressed(pTabFeq)
 
+TSheetExtCloseable.OnContextMenu  PROCEDURE(SIGNED pTabFeq, POINT pPt)
+sTabText                            STRING(32), AUTO
+  CODE
+  !- get original TAB text
+  sTabText = SELF.GetOriginalTabText(pTabFeq)
+  EXECUTE POPUP(printf('Close "%s" tab', sTabText))
+    SELF.OnCustomButtonPressed(pTabFeq)
+  END
+    
+  
 TSheetExtHelp.OnCustomButtonPressed   PROCEDURE(SIGNED pTabFeq)
 sTabText                                STRING(32), AUTO
   CODE

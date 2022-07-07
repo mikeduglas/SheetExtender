@@ -1,13 +1,15 @@
 # Sheet Extender
 Extends standard SHEET control.
 
-Sheet Extender is a class that allows to add a small button to each TAB control. This button has no default action, the demo demonstrates
+Sheet Extender is a class that allows some additional features:
+- A small button on each TAB control. This button has no default action, the demo demonstrates
 only 3 possible actions: dropdown menu, close button, help button.
+- Context menu on each TAB control.
 
 ![Screenshot 1](https://github.com/mikeduglas/SheetExtender/blob/master/screenshots/se_demo_1.png?raw=true)  
 ![Screenshot 2](https://github.com/mikeduglas/SheetExtender/blob/master/screenshots/se_demo_2.png?raw=true)  
 
-The buttons are fully customizabe, you can set up: text, font, size, colors, hover colors, acftions. Unicode text is supported (UTF-16 LE).
+Small buttons are fully customizabe, you can set up: text, font, size, colors, hover colors, acftions. Unicode text is supported (UTF-16 LE).
 
 ### Requirements
 - Clarion versions: C6.3 and higher.
