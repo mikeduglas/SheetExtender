@@ -1,7 +1,8 @@
 # Sheet Extender
 Extends standard SHEET control.
 
-The class extends standard SHEET control. Key features:
+The class extends standard SHEET control. Key features:  
+
 - A small button on each TAB control. This button has no default action, the demo demonstrates
 only 3 possible actions: dropdown menu, close button, help button.
 - Context menu on each TAB control (Right click).
