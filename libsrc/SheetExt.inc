@@ -45,9 +45,11 @@ ClearTabProps                   PROCEDURE(), PROTECTED
 NotifyTabGetText                PROCEDURE(TWnd pTabCtrl), PROTECTED
 
 GetTabRect                      PROCEDURE(SIGNED pTabFeq, *TRect pRect), PROTECTED
+SaveTabRect                     PROCEDURE(SIGNED pTabFeq, TRect pRect), PROTECTED
 GetTabXRect                     PROCEDURE(SIGNED pTabFeq, *TRect pRect), PROTECTED
 GetTabByXPoint                  PROCEDURE(POINT pt), SIGNED, PROTECTED    !- point inside a custom btn
 GetTabByPoint                   PROCEDURE(POINT pt), SIGNED, PROTECTED    !- point inside a tab
+IsVisible                       PROCEDURE(SIGNED pTabFeq), BOOL
 
 OnPaint                         PROCEDURE(), PROTECTED, VIRTUAL
 OnLButtonDown                   PROCEDURE(UNSIGNED wParam, LONG lParam), BOOL, VIRTUAL, PROTECTED

@@ -406,6 +406,15 @@ tabCtrl                         TWnd
   rc.right = tabCtrl.GetPropA(_TAB_right)
   rc.bottom = tabCtrl.GetPropA(_TAB_bottom)
 
+TSheetExtBase.SaveTabRect     PROCEDURE(SIGNED pTabFeq, *TRect rc)
+tabCtrl                         TWnd
+  CODE
+  tabCtrl.Init(pTabFeq)
+  tabCtrl.SetPropA(_TAB_left, rc.left)
+  tabCtrl.SetPropA(_TAB_top, rc.top)
+  tabCtrl.SetPropA(_TAB_right, rc.right)
+  tabCtrl.SetPropA(_TAB_bottom, rc.bottom)
+
 TSheetExtBase.GetTabXRect     PROCEDURE(SIGNED pTabFeq, *TRect rc)
 tabCtrl                         TWnd
   CODE
@@ -447,12 +456,17 @@ i                               LONG, AUTO
   END
   RETURN 0
 
+TSheetExtBase.IsVisible       PROCEDURE(SIGNED pTabFeq)
+tabCtrl                         TWnd
+  CODE
+  tabCtrl.Init(pTabFeq)
+  RETURN tabCtrl.GetPropA(_TAB_IsVisible_)
+
 TSheetExtBase.OnPaint         PROCEDURE()
 dc                              TDC
 res                             LONG, AUTO
 i                               LONG, AUTO
 tabFeq                          SIGNED, AUTO
-tabCtrl                         TWnd
 iconWidth                       LONG, AUTO
 totalWidth                      LONG, AUTO
 textWidth                       LONG, AUTO
@@ -492,8 +506,8 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
       CYCLE
     END
     
-    tabCtrl.Init(tabFeq)
-    IF NOT tabCtrl.GetPropA(_TAB_IsVisible_)
+!    printd('Tab %s: Visible=%b', SELF.GetOriginalTabText(tabFeq), SELF.IsVisible(tabFeq))
+    IF NOT SELF.IsVisible(tabFeq)
       !- skip hidden (by scrolling) tabs
       CYCLE
     END
@@ -531,10 +545,7 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
 !    dc.FillSolidRect(rcTab, RANDOM(0, 0ffffffh))
     
     !- save TAB's rect
-    tabCtrl.SetPropA(_TAB_left, rcTab.left)
-    tabCtrl.SetPropA(_TAB_top, rcTab.top)
-    tabCtrl.SetPropA(_TAB_right, rcTab.right)
-    tabCtrl.SetPropA(_TAB_bottom, rcTab.bottom)
+    SELF.SaveTabRect(tabFeq, rcTab)
     
     fntTab.DeleteObject()
 
