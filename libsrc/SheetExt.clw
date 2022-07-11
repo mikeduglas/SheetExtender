@@ -461,6 +461,44 @@ tabCtrl                         TWnd
   CODE
   tabCtrl.Init(pTabFeq)
   RETURN tabCtrl.GetPropA(_TAB_IsVisible_)
+  
+TSheetExtBase.DestroyTab      PROCEDURE(LONG pTabFeq)
+selectedTabFeq                  SIGNED, AUTO
+childIndex                      UNSIGNED, AUTO
+childFeq                        SIGNED, AUTO
+i                               LONG, AUTO
+  CODE
+  !- save a state before DESTROY(tab)
+  childIndex = pTabFeq{PROP:ChildIndex}           !- deleting TAB's index
+  selectedTabFeq = SELF.FEQ{PROP:ChoiceFEQ}  !- selected TAB
+
+  !- destroy the tab
+  DESTROY(pTabFeq)
+
+  !- refresh the sheet
+  SELF.UpdateWindow()
+
+  !- now childIndex is an index of next tab
+  LOOP i=childIndex TO SELF.FEQ{PROP:NumTabs}
+    childFeq = SELF.FEQ{PROP:Child, i}
+    IF SELF.IsVisible(childFeq)
+      BREAK
+    ELSE
+      SELF.FEQ{PROP:ChoiceFEQ} = childFeq
+    END
+  END
+
+  !- set tab focus
+  IF selectedTabFeq = pTabFeq
+    IF childIndex > 1
+      !- prev tab
+      SELECT(SELF.FEQ, childIndex-1)
+    ELSE
+      SELECT(SELF.FEQ, 1)
+    END
+  ELSE
+    SELF.FEQ{PROP:ChoiceFEQ} = selectedTabFeq
+  END
 
 TSheetExtBase.OnPaint         PROCEDURE()
 dc                              TDC
