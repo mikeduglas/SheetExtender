@@ -75,6 +75,7 @@ _TAB_left                     EQUATE('_TAB_left')
 _TAB_top                      EQUATE('_TAB_top')
 _TAB_right                    EQUATE('_TAB_right')
 _TAB_bottom                   EQUATE('_TAB_bottom')
+_TAB_backcolor                EQUATE('_TAB_backcolor')
 _X_exists                     EQUATE('_X_exists')
 _X_hovered                    EQUATE('_X_hovered')
 _X_left                       EQUATE('_X_left')
@@ -364,6 +365,7 @@ tabCtrl                         TWnd
   IF NOT tabCtrl.GetPropA(_TAB_Subclassed_)
     tabCtrl.SetWindowSubclass(ADDRESS(tab_SubclassProc), 0, ADDRESS(SELF))
     tabCtrl.SetPropA(_TAB_Subclassed_, TRUE)
+    tabCtrl.SetPropA(_TAB_backcolor, COLOR:NONE)
   END
   
 TSheetExtBase.GetOriginalTabText  PROCEDURE(SIGNED pTabFeq)
@@ -379,8 +381,7 @@ i                               LONG, AUTO
     tabFeq = SELF.FEQ{PROP:Child, i}
     tabCtrl.Init(tabFeq)
     
-    tabCtrl.SetPropA(_TAB_IsVisible_, 0)
-
+    tabCtrl.SetPropA(_TAB_IsVisible_, FALSE)
     tabCtrl.SetPropA(_X_exists, FALSE)
     tabCtrl.SetPropA(_X_hovered, FALSE)
     tabCtrl.SetPropA(_X_left, 0)
@@ -500,6 +501,19 @@ i                               LONG, AUTO
     SELF.FEQ{PROP:ChoiceFEQ} = selectedTabFeq
   END
 
+TSheetExtBase.GetTabBackground    PROCEDURE(SIGNED pTabFeq)
+tabCtrl                             TWnd
+  CODE
+  tabCtrl.Init(pTabFeq)
+  RETURN tabCtrl.GetPropA(_TAB_backcolor)
+
+TSheetExtBase.SetTabBackground    PROCEDURE(SIGNED pTabFeq, LONG pBackColor)
+tabCtrl                             TWnd
+  CODE
+  tabCtrl.Init(pTabFeq)
+  tabCtrl.SetPropA(_TAB_backcolor, pBackColor)
+  SELF.SendMessage(WM_PAINT, 0, 0)
+  
 TSheetExtBase.OnPaint         PROCEDURE()
 dc                              TDC
 res                             LONG, AUTO
@@ -516,6 +530,7 @@ rcTab                           TRect
 rcClose                         TRect
 textSize                        LIKE(SIZE)      !- size of a text
 cWidth                          LONG, AUTO      !- width of 1 ascii char
+clrTabBack                      LONG, AUTO
   CODE
   !- we are in OnPaint()
   !- start listen for TAB's WM_GETTEXT
@@ -532,7 +547,7 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
 
   dc.GetDC(SELF)
   SELF.GetClientRect(rcSheet)
-
+  
   totalWidth = 0
 
   !- Calc each tab's rect.
@@ -580,10 +595,21 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
     rcTab.Assign(rcText)
     rcTab.left -= iconWidth+2
     rcTab.right += TAB::PadWidth
+    rcTab.top -= 2
+    rcTab.bottom += 4
 !    dc.FillSolidRect(rcTab, RANDOM(0, 0ffffffh))
     
     !- save TAB's rect
     SELF.SaveTabRect(tabFeq, rcTab)
+    
+    !- if TAB's backcolor is defined, completely redraw this TAB
+    clrTabBack = SELF.GetTabBackground(tabFeq)
+    IF clrTabBack <> COLOR:NONE
+      dc.FillSolidRect(rcTab, clrTabBack)
+      dc.SetBkMode(TRANSPARENT)
+      dc.SetTextColor(tabFeq{PROP:FontColor})
+      dc.DrawText(tabFeq{PROP:Text}, rcText, dtFormat, TRUE)
+    END
     
     fntTab.DeleteObject()
 
@@ -600,7 +626,7 @@ cWidth                          LONG, AUTO      !- width of 1 ascii char
   END
   
   dc.ReleaseDC()
-
+  
 TSheetExtBase.OnDrawCustomButton  PROCEDURE(TDC dc, SIGNED pTabFeq, TRect pTabRect)
 bNoTheme                            BOOL, AUTO
 bIsSelected                         BOOL, AUTO
@@ -635,20 +661,6 @@ textColor                           LONG, AUTO
   fntButton.SelectObject(dc)
   
   tabCtrl.Init(pTabFeq)
-
-  COMPILE('New sheet properties', _C80_)
-  IF SELF.FEQ{PROP:TabSheetStyle} <> TabStyle:Default
-    rcX.OffsetRect(-TAB::StylePad, 0)
-  END
-  
-  !- fix diagonal border issue
-!  IF SELF.FEQ{PROP:TabSheetStyle} = TabStyle:BlackAndWhite
-!    printd('This index %i, selected index %i', pTabFeq{PROP:ChildIndex}, (SELF.FEQ{PROP:ChoiceFeq}){PROP:ChildIndex})
-!    IF NOT bIsSelected AND pTabFeq{PROP:ChildIndex} = (SELF.FEQ{PROP:ChoiceFeq}){PROP:ChildIndex} - 1
-!      rcX.OffsetRect(-TAB::StylePad*2, 0)
-!    END
-!  END
-  !'New sheet properties'
   
   !- calc background color
   IF tabCtrl.GetPropA(_X_hovered)
@@ -696,6 +708,22 @@ textColor                           LONG, AUTO
  
   !- get button text rect
   rcX.Assign(rc)
+
+  COMPILE('New sheet properties', _C80_)
+  IF SELF.FEQ{PROP:TabSheetStyle} <> TabStyle:Default
+!    rcX.OffsetRect(-TAB::StylePad, 0)
+    rcX.OffsetRect(-TAB::StylePad, 2)
+  END
+  
+  !- fix diagonal border issue
+!  IF SELF.FEQ{PROP:TabSheetStyle} = TabStyle:BlackAndWhite
+!    printd('This index %i, selected index %i', pTabFeq{PROP:ChildIndex}, (SELF.FEQ{PROP:ChoiceFeq}){PROP:ChildIndex})
+!    IF NOT bIsSelected AND pTabFeq{PROP:ChildIndex} = (SELF.FEQ{PROP:ChoiceFeq}){PROP:ChildIndex} - 1
+!      rcX.OffsetRect(-TAB::StylePad*2, 0)
+!    END
+!  END
+  !'New sheet properties'
+
   IF NOT SELF.btnInfo.IsUnicode
     dc.DrawText(SELF.btnInfo.ButtonText, rcX, dtFormat+DT_CALCRECT)
   ELSE
