@@ -697,7 +697,7 @@ textColor                           LONG, AUTO
   END
   
   IF bkColor <> COLOR:NONE AND BAND(bkColor, 80000000h) !- system color
-    bkColor = winapi::GetSysColor(bkColor)
+    bkColor = winapi::GetSysColor(BAND(bkColor, 0FFFFh))
   END
 
   !- calc custom button rect
@@ -751,7 +751,7 @@ textColor                           LONG, AUTO
   END
   IF textColor <> COLOR:NONE
     IF BAND(textColor, 80000000h) !- system color
-      textColor = winapi::GetSysColor(textColor)
+      textColor = winapi::GetSysColor(BAND(textColor, 0FFFFh))
     END
     dc.SetTextColor(textColor)
   END
