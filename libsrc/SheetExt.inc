@@ -1,6 +1,6 @@
 !* SHEET control extender
 !* mikeduglas@yandex.ru
-!* 2022
+!* 2023
 
   INCLUDE('winapi.inc'), ONCE
 
@@ -26,7 +26,7 @@ bPainting                       BOOL, PROTECTED   !- WM_PAINT started
 Construct                       PROCEDURE()
 Destruct                        PROCEDURE(), DERIVED
 
-Init                            PROCEDURE(SIGNED pFeq), DERIVED
+Init                            PROCEDURE(SIGNED pSheetFeq), DERIVED
 SetCustomButtonInfo             PROCEDURE(<STRING pText>, <UNSIGNED pExtraSpaces>, | 
                                   <STRING pFontName>, <REAL pFontSize>, <UNSIGNED pFontStyle>, <LONG pFontCharset>, | 
                                   <LONG pFontColor>, <LONG pBackColor>, <LONG pHoverFontColor>, <LONG pHoverBackColor>, <BOOL pIsUnicode>)
@@ -51,6 +51,9 @@ GetTabByXPoint                  PROCEDURE(POINT pt), SIGNED, PROTECTED    !- poi
 GetTabByPoint                   PROCEDURE(POINT pt), SIGNED, PROTECTED    !- point inside a tab
 IsVisible                       PROCEDURE(SIGNED pTabFeq), BOOL
 DestroyTab                      PROCEDURE(LONG pTabFeq) !- workaround for Clarion bug: after DESTROY(tab) next tab bacomes invisible
+
+GetTabBackground                PROCEDURE(SIGNED pTabFeq), LONG
+SetTabBackground                PROCEDURE(SIGNED pTabFeq, LONG pBackColor)
 
 OnPaint                         PROCEDURE(), PROTECTED, VIRTUAL
 OnLButtonDown                   PROCEDURE(UNSIGNED wParam, LONG lParam), BOOL, VIRTUAL, PROTECTED

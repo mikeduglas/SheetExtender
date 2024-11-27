@@ -1,6 +1,6 @@
 !* SHEET control extender
 !* mikeduglas@yandex.ru
-!* 2022
+!* 2023
 
                               MEMBER
 
@@ -140,6 +140,7 @@ ctrl                            &TSheetExtBase
   OF WM_PAINT
     ctrl.OnPaint()
     RETURN FALSE
+    
   END
   
   !- call original window proc
@@ -217,16 +218,16 @@ TSheetExtBase.Construct       PROCEDURE()
 TSheetExtBase.Destruct        PROCEDURE()
   CODE
   
-TSheetExtBase.Init            PROCEDURE(SIGNED pFeq)
+TSheetExtBase.Init            PROCEDURE(SIGNED pSheetFeq)
 i                               LONG, AUTO
 tabFeq                          SIGNED, AUTO
   CODE
-  ASSERT(pFeq{PROP:Type} = CREATE:sheet)
-  IF pFeq{PROP:Type} <> CREATE:sheet
+  ASSERT(pSheetFeq{PROP:Type} = CREATE:sheet)
+  IF pSheetFeq{PROP:Type} <> CREATE:sheet
     RETURN
   END
   
-  PARENT.Init(pFeq)
+  PARENT.Init(pSheetFeq)
   
   !- remoce unsupported SHEET attributes
   SELF.FEQ{PROP:Spread} = FALSE
@@ -597,7 +598,6 @@ clrTabBack                      LONG, AUTO
     rcTab.right += TAB::PadWidth
     rcTab.top -= 2
     rcTab.bottom += 4
-!    dc.FillSolidRect(rcTab, RANDOM(0, 0ffffffh))
     
     !- save TAB's rect
     SELF.SaveTabRect(tabFeq, rcTab)
